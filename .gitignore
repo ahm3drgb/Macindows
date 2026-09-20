@@ -1,0 +1,8 @@
+# Build outputs
+Macindows.app/
+*.dmg
+AppIcon.iconset/
+
+# macOS / editor
+.DS_Store
+.claude/
