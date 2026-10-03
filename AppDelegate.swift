@@ -69,6 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupRawScrollTap()
         setupMouseSpeedTap()
         setupFinderKeyTap()
+        AppLock.shared.start()
         // The settings window writes UserDefaults; pick every change up live
         NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged),
                                                name: UserDefaults.didChangeNotification, object: nil)
@@ -131,7 +132,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard !desktopToggleBusy else { return }
         desktopToggleBusy = true
         if isDesktopShown {
-            hiddenApps.forEach { _ = $0.unhide() }
+            hiddenApps.filter { !AppLock.shared.isLocked($0) }.forEach { _ = $0.unhide() }
             hiddenApps = []
             isDesktopShown = false
             statusItem.button?.image = NSImage(systemSymbolName: "macwindow", accessibilityDescription: "Macindows")
@@ -563,6 +564,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let infos = Self.gatherWindows(of: app)
             DispatchQueue.main.async {
                 guard let self = self, self.hoveredApp == app else { return }
+                // Never show thumbnails of a locked app
+                guard !AppLock.shared.isLocked(app) else { self.dismissWindowPreview(animated: false); return }
                 // Preview every windowed app; drop the previous preview if this one has no windows
                 guard !infos.isEmpty else { self.dismissWindowPreview(animated: false); return }
                 guard

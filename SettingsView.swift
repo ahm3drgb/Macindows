@@ -18,6 +18,7 @@ enum Settings {
     static let finderBackspaceBack = "FinderBackspaceBack"
     static let finderEnterOpens    = "FinderEnterOpens"
     static let cmdShiftLanguage    = "CmdShiftSwitchesLanguage"
+    static let lockedAppsKey       = "LockedAppBundleIDs"
 
     static func registerDefaults() {
         UserDefaults.standard.register(defaults: [
@@ -41,6 +42,11 @@ enum Settings {
     static func bool(_ key: String) -> Bool { UserDefaults.standard.bool(forKey: key) }
     static func double(_ key: String) -> Double { UserDefaults.standard.double(forKey: key) }
     static func int(_ key: String) -> Int { UserDefaults.standard.integer(forKey: key) }
+    /// Bundle IDs that need Touch ID before they show.
+    static var lockedApps: [String] {
+        get { UserDefaults.standard.stringArray(forKey: lockedAppsKey) ?? [] }
+        set { UserDefaults.standard.set(newValue, forKey: lockedAppsKey) }
+    }
 }
 
 struct SettingsView: View {
@@ -59,9 +65,10 @@ struct SettingsView: View {
     @AppStorage(Settings.finderEnterOpens)    private var finderEnterOpens = true
     @AppStorage(Settings.cmdShiftLanguage)    private var cmdShiftLanguage = true
     @State private var startAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var lockedApps = Settings.lockedApps
 
     enum Pane: String, CaseIterable, Identifiable {
-        case dock = "Dock", finder = "Finder", mouse = "Mouse", keyboard = "Keyboard", general = "General"
+        case dock = "Dock", finder = "Finder", mouse = "Mouse", keyboard = "Keyboard", appLock = "App Lock", general = "General"
         var id: String { rawValue }
         var symbol: String {
             switch self {
@@ -69,6 +76,7 @@ struct SettingsView: View {
             case .finder: return "folder"
             case .mouse: return "computermouse"
             case .keyboard: return "keyboard"
+            case .appLock: return "lock"
             case .general: return "gearshape"
             }
         }
@@ -107,6 +115,7 @@ struct SettingsView: View {
                 case .finder: finderTab
                 case .mouse: mouseTab
                 case .keyboard: keyboardTab
+                case .appLock: appLockTab
                 case .general: generalTab
                 }
             }
@@ -218,6 +227,49 @@ struct SettingsView: View {
             } header: { Text("Input language") }
         }
         .formStyle(.grouped)
+    }
+
+    private var appLockTab: some View {
+        Form {
+            Section {
+                ForEach(lockedApps, id: \.self) { id in
+                    let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id)
+                    HStack {
+                        if let url = url {
+                            Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                                .resizable().frame(width: 24, height: 24)
+                        }
+                        Text(url.map { FileManager.default.displayName(atPath: $0.path) } ?? id)
+                        Spacer()
+                        Button(role: .destructive) {
+                            lockedApps.removeAll { $0 == id }
+                            Settings.lockedApps = lockedApps
+                        } label: { Image(systemName: "minus.circle.fill") }
+                        .buttonStyle(.borderless)
+                    }
+                }
+                Button("Add App…", action: addLockedApps)
+            } header: { Text("Locked apps") } footer: {
+                Text("A locked app hides until you pass Touch ID (or your login password). It locks again when it quits, closes its last window, the screen locks or the Mac sleeps. Press ⌃⌘L to lock them all now.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private func addLockedApps() {
+        let panel = NSOpenPanel()
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        panel.allowedContentTypes = [.application]
+        panel.allowsMultipleSelection = true
+        panel.prompt = "Lock"
+        guard panel.runModal() == .OK else { return }
+        for url in panel.urls {
+            guard let id = Bundle(url: url)?.bundleIdentifier, id != Bundle.main.bundleIdentifier,
+                  !lockedApps.contains(id) else { continue }
+            lockedApps.append(id)
+        }
+        Settings.lockedApps = lockedApps
     }
 
     private var generalTab: some View {

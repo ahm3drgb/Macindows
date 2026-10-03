@@ -10,9 +10,10 @@ rm -rf "$BUNDLE"
 mkdir -p "$BUNDLE/Contents/MacOS"
 mkdir -p "$BUNDLE/Contents/Resources"
 
-swiftc -framework Cocoa -framework ApplicationServices -framework ServiceManagement -framework ScreenCaptureKit -framework SwiftUI -framework Carbon \
+swiftc -framework Cocoa -framework ApplicationServices -framework ServiceManagement -framework ScreenCaptureKit -framework SwiftUI -framework Carbon -framework LocalAuthentication \
     AppDelegate.swift \
     SettingsView.swift \
+    AppLock.swift \
     main.swift \
     -o "$BUNDLE/Contents/MacOS/$APPNAME"
 
