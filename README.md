@@ -146,10 +146,16 @@ SIGN_ID="Developer ID Application: Name (TEAMID)" NOTARY_PROFILE=macindows ./mak
 - **Permissions reset after a rebuild.** Sign with a stable identity, not ad-hoc (`-`).
 - **Logs:** `~/Library/Logs/Macindows.log` (contains event tap failures only).
 
-## Contributing
+## Feedback
 
-Bug reports and pull requests are welcome. Open an issue on [GitHub](https://github.com/ahm3drgb/Macindows/issues).
+Bug reports and feature requests are welcome. Open an issue on [GitHub](https://github.com/ahm3drgb/Macindows/issues).
+
+## License
+
+Copyright © 2026 Ahmed Abokhalil. All rights reserved.
+
+The source code is published for viewing and reference only. You may not copy, modify or redistribute it without written permission. You may use the official releases for personal use. See [LICENSE](LICENSE) for the full terms.
 
 ---
 
-<p align="center">Made with ❤️ by <b>Ahmed Abokhalil</b></p>
+<p align="center">Made with ❤️ by <b>Ahmed Abokhalil</b><br><sub>© 2026 Ahmed Abokhalil. All rights reserved.</sub></p>

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright (c) 2026 Ahmed Abokhalil. All rights reserved.
 # Build Macindows.app and package it as a drag-to-Applications DMG.
 #
 #   ./make_dmg.sh                       # signs with "Apple Development" (local testing only)

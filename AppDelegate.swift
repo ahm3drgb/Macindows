@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ahmed Abokhalil. All rights reserved.
+
 import Cocoa
 import ServiceManagement
 import ApplicationServices
