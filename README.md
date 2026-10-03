@@ -4,7 +4,7 @@ Windows-style desktop behaviors for macOS, living in the menu bar.
 
 ## Download
 
-Grab **Macindows-1.0.dmg** from the [latest release](https://github.com/linkingforservices/macindows/releases/latest), open it and drag **Macindows** to **Applications**.
+Grab **Macindows-1.0.dmg** from the [latest release](https://github.com/ahm3drgb/Macindows/releases/latest), open it and drag **Macindows** to **Applications**.
 
 First launch shows a permissions guide. Macindows needs:
 
