@@ -13,6 +13,8 @@ final class AppLock {
 
     private var unlocked = Set<pid_t>()
     private var authenticating = Set<pid_t>()
+    /// Until then, another app becoming active hands focus back to the Touch ID prompt
+    private var keepPromptFocusUntil = Date.distantPast
     /// Unlocked apps seen without windows on the previous tick
     private var windowless = Set<pid_t>()
     private var hotKey: EventHotKeyRef?
@@ -89,12 +91,22 @@ final class AppLock {
     }
 
     private func guardApp(_ app: NSRunningApplication) {
-        guard isLocked(app) else { return }
+        guard isLocked(app) else {
+            // Hiding the locked app makes macOS activate the previous app, which takes focus
+            // from the prompt and Touch ID stops listening. Take it back for a short while;
+            // after that the user may switch away on purpose.
+            if !authenticating.isEmpty, Date() < keepPromptFocusUntil, !NSRunningApplication.current.isActive {
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            return
+        }
         // Hide on every activation, even while the prompt is up, so nothing shows behind it
         app.hide()
         let pid = app.processIdentifier
-        guard !authenticating.contains(pid) else { return }
+        // A launching app activates itself again about a second in: give focus back to the prompt
+        guard !authenticating.contains(pid) else { NSApp.activate(ignoringOtherApps: true); return }
         authenticating.insert(pid)
+        keepPromptFocusUntil = Date().addingTimeInterval(2)
         showShield(for: app)
 
         let context = LAContext()
