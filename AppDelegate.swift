@@ -533,21 +533,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         hoveredApp = nil
         lastHitTime = .distantPast  // next hover re-hit-tests immediately
         lastDismissAt = Date()
-        guard let panel = previewPanel, panel.isVisible else {
-            previewPanel = nil
-            return
-        }
-        if !animated {
+        // Detach now: a new preview can open during the fade-out, and the fade's completion
+        // must not clear it (that left an untracked panel on screen until relaunch)
+        guard let panel = previewPanel else { return }
+        previewPanel = nil
+        guard animated, panel.isVisible else {
             panel.orderOut(nil)
-            previewPanel = nil
             return
         }
+        panel.ignoresMouseEvents = true
         NSAnimationContext.runAnimationGroup({ ctx in
             ctx.duration = 0.15
             panel.animator().alphaValue = 0
         }, completionHandler: {
             panel.orderOut(nil)
-            self.previewPanel = nil
         })
     }
 
