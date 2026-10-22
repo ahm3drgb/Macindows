@@ -95,8 +95,9 @@ final class AppLock {
             // Hiding the locked app makes macOS activate the previous app, which takes focus
             // from the prompt and Touch ID stops listening. Take it back for a short while;
             // after that the user may switch away on purpose.
-            if !authenticating.isEmpty, Date() < keepPromptFocusUntil, !NSRunningApplication.current.isActive {
-                NSApp.activate(ignoringOtherApps: true)
+            if !authenticating.isEmpty, Date() < keepPromptFocusUntil,
+               app.bundleIdentifier != Self.promptAgentID {
+                focusPrompt()
             }
             return
         }
@@ -104,14 +105,13 @@ final class AppLock {
         app.hide()
         let pid = app.processIdentifier
         // A launching app activates itself again about a second in: give focus back to the prompt
-        guard !authenticating.contains(pid) else { NSApp.activate(ignoringOtherApps: true); return }
+        guard !authenticating.contains(pid) else { focusPrompt(); return }
         authenticating.insert(pid)
         keepPromptFocusUntil = Date().addingTimeInterval(2)
         showShield(for: app)
 
         let context = LAContext()
         let reason = "unlock \(app.localizedName ?? "this app")"
-        NSApp.activate(ignoringOtherApps: true)
         // .deviceOwnerAuthentication = Touch ID, falling back to the login password
         context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, _ in
             DispatchQueue.main.async {
@@ -124,6 +124,14 @@ final class AppLock {
                 app.activate()
             }
         }
+    }
+
+    /// The system process that draws the Touch ID prompt. Touch ID listens only while it is active.
+    /// Activating Macindows instead takes focus away from the prompt.
+    private static let promptAgentID = "com.apple.LocalAuthentication.UIAgent"
+
+    private func focusPrompt() {
+        NSRunningApplication.runningApplications(withBundleIdentifier: Self.promptAgentID).first?.activate()
     }
 
     private func showShield(for app: NSRunningApplication) {
