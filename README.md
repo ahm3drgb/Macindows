@@ -59,6 +59,12 @@ Every feature is a switch in Settings. Turn on what you need and leave the rest 
 |---|---|
 | **⌘ + ⇧ switches language** | Press and release Command + Shift together to go to the next input source, like Alt + Shift on Windows. Shortcuts such as ⌘⇧S keep working. |
 
+### Sound
+
+| Feature | What it does |
+|---|---|
+| **Volume keys for audio interfaces** | Many USB audio interfaces have no volume control, so macOS ignores the volume keys for them. Turn this on in **Settings › Sound**, and the volume up, down and mute keys work on that device again, with an on-screen indicator. Hold **⌥ Option + ⇧ Shift** for smaller steps. Devices that have their own volume control are left to macOS. Needs macOS 14.2 or later and the *System Audio Recording* permission. |
+
 ### App Lock
 
 Keep private apps such as Messages, Photos or your password manager hidden from anyone who uses your Mac.

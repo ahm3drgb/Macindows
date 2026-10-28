@@ -72,6 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupMouseSpeedTap()
         setupFinderKeyTap()
         AppLock.shared.start()
+        SoftVolume.shared.start()
         // The settings window writes UserDefaults; pick every change up live
         NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged),
                                                name: UserDefaults.didChangeNotification, object: nil)
@@ -180,6 +181,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let tap = keyTap {
             CGEvent.tapEnable(tap: tap, enable: keyTapWanted)
         }
+        SoftVolume.shared.refresh()
     }
 
     // MARK: - Dock Icon Click Toggle
@@ -1212,6 +1214,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        SoftVolume.shared.stop()
         monitors.forEach { NSEvent.removeMonitor($0) }
         if let tap = scrollEventTap { CGEvent.tapEnable(tap: tap, enable: false) }
         if let source = scrollRunLoopSource {

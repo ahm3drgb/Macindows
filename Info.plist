@@ -28,6 +28,8 @@
     <string>Macindows shows live window thumbnails when you hover a Dock icon.</string>
     <key>NSAppleEventsUsageDescription</key>
     <string>Macindows resizes Finder icons when you hold Control and scroll.</string>
+    <key>NSAudioCaptureUsageDescription</key>
+    <string>Macindows passes system audio through its own volume control for output devices that have none.</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
 </dict>

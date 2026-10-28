@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Ahmed Abokhalil. All rights reserved.
 
 import SwiftUI
+import Combine
 import ServiceManagement
 
 /// Every user-facing switch lives in UserDefaults under these keys.
@@ -21,6 +22,8 @@ enum Settings {
     static let finderEnterOpens    = "FinderEnterOpens"
     static let cmdShiftLanguage    = "CmdShiftSwitchesLanguage"
     static let lockedAppsKey       = "LockedAppBundleIDs"
+    static let softVolume          = "SoftVolumeEnabled"
+    static let softVolumeLevel     = "SoftVolumeLevel"
 
     static func registerDefaults() {
         UserDefaults.standard.register(defaults: [
@@ -38,6 +41,8 @@ enum Settings {
             finderBackspaceBack: true,
             finderEnterOpens: true,
             cmdShiftLanguage: true,
+            softVolume: false,
+            softVolumeLevel: 0.5,
         ])
     }
 
@@ -66,11 +71,14 @@ struct SettingsView: View {
     @AppStorage(Settings.finderBackspaceBack) private var finderBackspaceBack = true
     @AppStorage(Settings.finderEnterOpens)    private var finderEnterOpens = true
     @AppStorage(Settings.cmdShiftLanguage)    private var cmdShiftLanguage = true
+    @AppStorage(Settings.softVolume)          private var softVolume = false
+    @State private var softVolumeStatus = SoftVolume.shared.status
+    private let statusTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     @State private var startAtLogin = SMAppService.mainApp.status == .enabled
     @State private var lockedApps = Settings.lockedApps
 
     enum Pane: String, CaseIterable, Identifiable {
-        case dock = "Dock", finder = "Finder", mouse = "Mouse", keyboard = "Keyboard", appLock = "App Lock", general = "General"
+        case dock = "Dock", finder = "Finder", mouse = "Mouse", keyboard = "Keyboard", sound = "Sound", appLock = "App Lock", general = "General"
         var id: String { rawValue }
         var symbol: String {
             switch self {
@@ -78,6 +86,7 @@ struct SettingsView: View {
             case .finder: return "folder"
             case .mouse: return "computermouse"
             case .keyboard: return "keyboard"
+            case .sound: return "speaker.wave.2"
             case .appLock: return "lock"
             case .general: return "gearshape"
             }
@@ -117,6 +126,7 @@ struct SettingsView: View {
                 case .finder: finderTab
                 case .mouse: mouseTab
                 case .keyboard: keyboardTab
+                case .sound: soundTab
                 case .appLock: appLockTab
                 case .general: generalTab
                 }
@@ -227,6 +237,24 @@ struct SettingsView: View {
                 Text("Cycles through the layouts enabled in System Settings › Keyboard › Input Sources.")
                     .font(.caption).foregroundStyle(.secondary)
             } header: { Text("Input language") }
+        }
+        .formStyle(.grouped)
+    }
+
+    private var soundTab: some View {
+        Form {
+            Section {
+                Toggle(isOn: $softVolume) {
+                    label("Volume keys for audio interfaces", "speaker.wave.2",
+                          "For output devices with no volume control of their own, such as many USB audio interfaces. Macindows changes the volume in software and shows its own indicator.")
+                }
+                Text(softVolumeStatus)
+                    .font(.caption).foregroundStyle(.secondary)
+                    .onReceive(statusTimer) { _ in softVolumeStatus = SoftVolume.shared.status }
+            } header: { Text("Volume") } footer: {
+                Text("Hold ⌥ Option + ⇧ Shift for smaller steps. The first time, macOS asks to let Macindows record system audio. Allow it: the audio passes through Macindows to apply the volume. If you deny it, that device goes silent while this switch is on.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
     }
