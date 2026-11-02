@@ -221,7 +221,9 @@ final class SoftVolume {
 
     private func handleKey(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
-            if let tap = keyTap { CGEvent.tapEnable(tap: tap, enable: activeDevice != kAudioObjectUnknown) }
+            // Only re-enable. Disabling the tap sends .tapDisabledByUserInput here, so disabling
+            // again from this handler loops forever through WindowServer and drains the battery.
+            if let tap = keyTap, activeDevice != kAudioObjectUnknown { CGEvent.tapEnable(tap: tap, enable: true) }
             return Unmanaged.passUnretained(event)
         }
         guard activeDevice != kAudioObjectUnknown,
